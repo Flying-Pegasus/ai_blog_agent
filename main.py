@@ -3,6 +3,7 @@ import os
 import asyncio
 from utils.cli import display_welcome, display_summary
 from agents.context_agent import ContextAgent
+from agents.writing_agent import WritingAgent
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="AI Blog Writing Agent")
@@ -31,6 +32,12 @@ async def main():
     print(f"News Articles: {len(research_data['news'])} found")
     print(f"Keywords: {research_data['keywords']}")
     print(f"Quotes: {research_data['quotes']}")
+    
+    # Writing Agent: Generate blog
+    writing_agent = WritingAgent(topic, tone, subtopics, research_data)
+    blog_content = writing_agent.generate_blog()
+    print("\nGenerated Blog Preview:")
+    print(blog_content[:500] + "..." if len(blog_content) > 500 else blog_content)
     
     display_summary(topic, "outputs/blogs/sample_blog.md", "outputs/metadata/sample_metadata.json")
 

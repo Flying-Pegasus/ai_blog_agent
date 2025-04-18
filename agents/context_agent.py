@@ -17,7 +17,7 @@ class ContextAgent:
     def generate_subtopics(self):
         model = genai.GenerativeModel("gemini-1.5-flash")
         prompt = (
-            f"Generate 4-5 subtopics (H2 headings) for a blog on '{self.tone}' "
+            f"Generate 4-5 subtopics (H2 headings) for a blog on '{self.topic}' "
             f"with a {self.tone} tone. Return only the headings as a numbered list, "
             f"one per line, without any additional text or formatting (e.g., no asterisks or explanations)."
             f"Example:\n1. Introduction to Python in AI\n2. Key Libraries for AI Development"

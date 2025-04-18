@@ -4,6 +4,11 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from cachetools import TTLCache
 from dotenv import load_dotenv
 import os
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Cache API responses for 1 hour
 cache = TTLCache(maxsize=100, ttl=3600)
@@ -18,30 +23,38 @@ class APIHandler:
         url = f"https://newsdata.io/api/1/news?apikey={self.newsdata_api_key}&q={query}"
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
+                logger.info(f"Fetching NewsData.io: {url}")
                 response.raise_for_status()
                 data = await response.json()
+                logger.info(f"NewsData.io response: {data}")
                 cache[(url, query)] = data
                 return data.get("results", [])
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def fetch_datamuse(self, query):
-        url = f"https://api.datamuse.com/words?rel_jja={query}&max=10"
+        # Simplify query to a single keyword (e.g., "python" or "ai")
+        simplified_query = query.split("+")[-1] if "+" in query else query
+        url = f"https://api.datamuse.com/words?ml={simplified_query}&max=10"
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
+            async with session.get(url) as session:
+                logger.info(f"Fetching Datamuse: {url}")
                 response.raise_for_status()
                 data = await response.json()
-                cache[(url, query)] = data
+                logger.info(f"Datamuse response: {data}")
+                cache[(url, simplified_query)] = data
                 return [item["word"] for item in data]
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def fetch_quotable(self, tag="technology"):
+    async def fetch_quotable(self, tag="technology|innovation"):
         url = f"https://api.quotable.io/quotes?tags={tag}&limit=5"
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
+                logger.info(f"Fetching Quotable.io: {url}")
                 response.raise_for_status()
                 data = await response.json()
+                logger.info(f"Quotable.io response: {data}")
                 cache[(url, tag)] = data
-                return [{"content": item["content"], "author": item["author"]} for item in data["data"]]
+                return [{"content": item["content"], "author": item["author"]} for item in data.get("results", [])]
 
     async def fetch_all(self, query):
         if (query, "all") in cache:
