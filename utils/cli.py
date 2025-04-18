@@ -1,5 +1,3 @@
-
-
 def display_welcome(topic, tone):
     print("=====================================")
     print("      AI Blog Writing Agent      ")
