@@ -35,9 +35,13 @@ class SEOAgent:
         # Filter keywords to exclude irrelevant terms
         valid_keywords = [
             kw for kw in self.research_data["keywords"]
-            if len(kw.split()) <= 2 and kw.lower() not in ["three-toed sloth", "bradypus tridactylus", "petri", "anon", "mei", "chiu", "yee", "lian"]
+            if len(kw.split()) <= 2 and kw.lower() not in [
+                "three-toed sloth", "bradypus tridactylus", "petri", "anon", "mei", "chiu", "yee", "lian",
+                "artificial insemination", "cbs", "nsis", "nih", "nsi", "establishment", "immigration", "without",
+                "elected", "adherents", "advocates"
+            ]
         ]
-        return valid_keywords[:5] or ["AI", "Python", "machine learning", "data science"]
+        return valid_keywords[:5] or ["AI", "Python", "machine learning", "data science", "neural network"]
 
     def calculate_reading_time(self):
         word_count = len(self.blog_content.split())

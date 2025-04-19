@@ -25,4 +25,18 @@ def display_summary(topic, blog_path, metadata_path):
         print(f"URL Slug: {metadata['url_slug']}")
     except Exception as e:
         print(f"Error displaying metadata: {str(e)}")
+    # Show quote used
+    try:
+        with open(blog_path, "r", encoding="utf-8") as f:
+            blog_content = f.read()
+            # Find quote between first H1 and first H2
+            intro = blog_content.split("## ")[1] if len(blog_content.split("## ")) > 1 else blog_content
+            for line in intro.split("\n"):
+                if "\"" in line and " by " in line:
+                    print(f"Quote Used: {line.strip()}")
+                    break
+            else:
+                print("Quote Used: Not found in introduction")
+    except Exception as e:
+        print(f"Error displaying quote: {str(e)}")
     print("Thank you for using the AI Blog Writing Agent!")
