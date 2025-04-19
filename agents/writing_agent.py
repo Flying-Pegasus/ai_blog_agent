@@ -19,17 +19,18 @@ class WritingAgent:
             f"Write a 100-150 word introduction for a blog titled '{self.topic}' with a {self.tone} tone. "
             f"Include this quote: '{quote['content']}' by {quote['author']}. "
             f"Introduce the topic, its importance, and preview the subtopics: {', '.join(self.subtopics)}. "
-            f"End with a hook to engage readers."
+            f"End with a hook to engage readers. Use clear, concise language."
         )
         response = self.model.generate_content(prompt)
         return response.text.strip()
 
     def generate_section(self, subtopic):
-        keywords = ", ".join(self.research_data["keywords"][:3]) if self.research_data["keywords"] else "AI, Python"
+        keywords = ", ".join(self.research_data["keywords"][:3] or ["AI", "Python", "machine learning"])
         prompt = (
             f"Write a 200-300 word section for a blog on '{self.topic}' with a {self.tone} tone, "
             f"titled '{subtopic}'. Incorporate these keywords: {keywords}. "
-            f"Use clear, engaging language and include 2-3 bullet points summarizing key points."
+            f"Use clear, engaging language and include 2-3 bullet points summarizing key points. "
+            f"Ensure the content is informative and suitable for beginners."
         )
         response = self.model.generate_content(prompt)
         return response.text.strip()
@@ -38,7 +39,8 @@ class WritingAgent:
         prompt = (
             f"Write a 100-150 word conclusion for a blog titled '{self.topic}' with a {self.tone} tone. "
             f"Summarize the key points from the subtopics: {', '.join(self.subtopics)}. "
-            f"Include a call-to-action encouraging readers to explore Python for AI or share their experiences."
+            f"Include a call-to-action encouraging readers to explore Python for AI or share their experiences. "
+            f"Use an inspiring and motivating tone."
         )
         response = self.model.generate_content(prompt)
         return response.text.strip()

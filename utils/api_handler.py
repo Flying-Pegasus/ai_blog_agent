@@ -32,25 +32,33 @@ class APIHandler:
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def fetch_datamuse(self, query):
-        # Use a simplified query (e.g., "python" or "ai")
-        simplified_query = query.split("+")[-1] if "+" in query else query
-        url = f"https://api.datamuse.com/words?ml={simplified_query}&max=10"
+        # Split query and use key terms (e.g., "python", "ai")
+        terms = query.split("+")[-2:] if "+" in query else [query]  # e.g., ["python", "ai"]
+        keywords = []
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                logger.info(f"Fetching Datamuse: {url}")
-                try:
-                    response.raise_for_status()
-                    data = await response.json()
-                    logger.info(f"Datamuse response: {data}")
-                    keywords = [item["word"] for item in data if "word" in item]
-                    cache[(url, simplified_query)] = keywords
-                    return keywords
-                except Exception as e:
-                    logger.error(f"Datamuse error: {str(e)}")
-                    return []
+            for term in terms:
+                url = f"https://api.datamuse.com/words?ml={term}&max=10"
+                async with session.get(url) as response:
+                    logger.info(f"Fetching Datamuse: {url}")
+                    try:
+                        response.raise_for_status()
+                        data = await response.json()
+                        logger.info(f"Datamuse response for {term}: {data}")
+                        # Filter for relevant keywords (e.g., synonyms or nouns)
+                        term_keywords = [
+                            item["word"] for item in data
+                            if "word" in item and ("syn" in item.get("tags", []) or "n" in item.get("tags", []))
+                        ]
+                        keywords.extend(term_keywords[:5])  # Limit to 5 per term
+                    except Exception as e:
+                        logger.error(f"Datamuse error for {term}: {str(e)}")
+        # Remove duplicates and limit to 10 keywords
+        keywords = list(dict.fromkeys(keywords))[:10]
+        cache[(query, "datamuse")] = keywords
+        return keywords
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def fetch_quotable(self, tag="technology|innovation"):
+    async def fetch_quotable(self, tag="technology,innovation"):
         url = f"https://api.quotable.io/quotes?tags={tag}&limit=5"
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
@@ -59,7 +67,12 @@ class APIHandler:
                     response.raise_for_status()
                     data = await response.json()
                     logger.info(f"Quotable.io response: {data}")
-                    quotes = [{"content": item["content"], "author": item["author"]} for item in data.get("results", [])]
+                    quotes = [
+                        {"content": item["content"], "author": item["author"]}
+                        for item in data.get("results", [])
+                    ]
+                    if not quotes:
+                        logger.warning(f"No quotes found for tags: {tag}")
                     cache[(url, tag)] = quotes
                     return quotes
                 except Exception as e:

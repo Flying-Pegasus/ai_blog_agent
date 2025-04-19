@@ -8,3 +8,4 @@
 <p>    GOOGLE_API_KEY = Your_api_key (Generate this api key from Google Gemini API)</p>
 <p>    NEWSDATA_API_KEY= Your_api_key (Generate the api key from NewsData.io)</p>
 <p>7. Run the command '''python main.py --topic "How Python is used in AI" --tone educational''' to generate the required blog output.</p>
+<p>8. Check the outputs/blogs/ and outputs/metadata/ directory for the required Blog output as .md and Metadata output as .json file of your given prompt.</p>

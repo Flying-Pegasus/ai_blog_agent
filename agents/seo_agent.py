@@ -22,20 +22,27 @@ class SEOAgent:
         return response.text.strip()
 
     def generate_meta_description(self):
+        keywords = ", ".join(self.generate_tags()[:3])
         prompt = (
             f"Write a 150-160 character meta-description for a blog on '{self.topic}' "
-            f"with a {self.tone} tone. Include keywords: {', '.join(self.research_data['keywords'][:3] or ['AI', 'Python'])}."
+            f"with a {self.tone} tone. Include keywords: {keywords}. "
+            f"Use clear, professional language to attract readers."
         )
         response = self.model.generate_content(prompt)
         return response.text.strip()
 
     def generate_tags(self):
-        return self.research_data["keywords"][:5] or ["AI", "Python", "machine learning"]
+        # Filter keywords to exclude irrelevant terms
+        valid_keywords = [
+            kw for kw in self.research_data["keywords"]
+            if len(kw.split()) <= 2 and kw.lower() not in ["three-toed sloth", "bradypus tridactylus", "petri", "anon", "mei", "chiu", "yee", "lian"]
+        ]
+        return valid_keywords[:5] or ["AI", "Python", "machine learning", "data science"]
 
     def calculate_reading_time(self):
         word_count = len(self.blog_content.split())
         minutes = round(word_count / 200)
-        return max(1, minutes)  # Minimum 1 minute
+        return max(1, minutes)
 
     def generate_url_slug(self):
         return self.topic.lower().replace(" ", "-").replace("'", "")
